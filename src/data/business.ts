@@ -14,6 +14,13 @@ export const business = {
   phone: '+254 741 435933',
   email: '',
   whatsapp: '', // left blank on purpose — mostly phone calls for now
+  location: {
+    lat: 0.9960029,
+    lng: 35.0044298,
+    // The full Google Maps place link, for a "View on Google Maps" button
+    googleMapsUrl:
+      'https://www.google.com/maps/place/Sarini+Bistro/@0.9960029,35.0044298,17z',
+  },
 }
 
 export function telHref() {
@@ -22,4 +29,14 @@ export function telHref() {
 
 export function whatsappHref() {
   return business.whatsapp ? `https://wa.me/${business.whatsapp}` : undefined
+}
+
+export function directionsHref() {
+  const { lat, lng } = business.location
+  return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
+}
+
+export function mapEmbedSrc() {
+  const { lat, lng } = business.location
+  return `https://www.google.com/maps?q=${lat},${lng}&z=16&output=embed`
 }
