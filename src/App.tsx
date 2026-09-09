@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Header from './components/Header'
 import Hero from './components/Hero'
+import Gallery from './components/Gallery'
 import FeaturedSpecialties from './components/FeaturedSpecialties'
 import Concept from './components/Concept'
 import CategoryTabs from './components/CategoryTabs'
@@ -22,6 +23,7 @@ function App() {
     <>
       <Header />
       <Hero />
+      <Gallery />
       <FeaturedSpecialties />
       <Concept />
       <section id="menu">
