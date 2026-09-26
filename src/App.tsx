@@ -8,10 +8,14 @@ import CategoryTabs from './components/CategoryTabs'
 import MenuSection from './components/MenuSection'
 import VisitUs from './components/VisitUs'
 import Footer from './components/Footer'
+import CartBar from './components/CartBar'
+import CartModal from './components/CartModal'
+import { CartProvider } from './context/CartContext'
 import { menu } from './data/menu'
 
 function App() {
   const [activeId, setActiveId] = useState(menu[0].id)
+  const [cartOpen, setCartOpen] = useState(false)
   const activeCategory = menu.find((c) => c.id === activeId) ?? menu[0]
 
   function handleSelect(id: string) {
@@ -20,7 +24,7 @@ function App() {
   }
 
   return (
-    <>
+    <CartProvider>
       <Header />
       <Hero />
       <Gallery />
@@ -32,7 +36,9 @@ function App() {
       </section>
       <VisitUs />
       <Footer />
-    </>
+      <CartBar onReview={() => setCartOpen(true)} />
+      <CartModal open={cartOpen} onClose={() => setCartOpen(false)} />
+    </CartProvider>
   )
 }
 
