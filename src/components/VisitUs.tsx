@@ -106,18 +106,6 @@ export default function VisitUs() {
         </div>
       </section>
 
-      <section id="track-order" className="border-b border-white/5 px-6 py-20">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="font-serif text-lg italic text-gold/80">Track Order</p>
-          <h2 className="mt-2 font-serif text-3xl text-cream sm:text-4xl">
-            Order Tracking
-          </h2>
-          <p className="mt-4 text-cream/60">
-            Online ordering and M-Pesa checkout are on the way. Once live,
-            you'll be able to track your order right here by order number.
-          </p>
-        </div>
-      </section>
     </>
   )
 }

@@ -7,6 +7,7 @@ import Concept from './components/Concept'
 import CategoryTabs from './components/CategoryTabs'
 import MenuSection from './components/MenuSection'
 import VisitUs from './components/VisitUs'
+import TrackOrder from './components/TrackOrder'
 import Footer from './components/Footer'
 import CartBar from './components/CartBar'
 import CartModal from './components/CartModal'
@@ -35,6 +36,7 @@ function App() {
         <MenuSection category={activeCategory} />
       </section>
       <VisitUs />
+      <TrackOrder />
       <Footer />
       <CartBar onReview={() => setCartOpen(true)} />
       <CartModal open={cartOpen} onClose={() => setCartOpen(false)} />
