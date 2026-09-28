@@ -15,6 +15,8 @@ interface StaffOrder {
   status: string
   mpesa_receipt: string | null
   created_at: string
+  completed_by: string | null
+  completed_at: string | null
 }
 
 const STATUSES = [
@@ -42,6 +44,24 @@ function saveKey(value: string | null) {
     else sessionStorage.removeItem(STORAGE_KEY)
   } catch {
     // Storage unavailable — staff will just need to sign in again after a refresh.
+  }
+}
+
+const NAME_KEY = 'sarini-staff-name'
+
+function readSavedName() {
+  try {
+    return localStorage.getItem(NAME_KEY) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+function saveName(value: string) {
+  try {
+    localStorage.setItem(NAME_KEY, value)
+  } catch {
+    // Not critical — staff just retype their name next time.
   }
 }
 
@@ -159,8 +179,30 @@ export default function StaffPage() {
 
   async function updateStatus(code: string, status: string) {
     if (!key) return
+
+    // Marking an order completed records who did it.
+    let completedBy: string | null = null
+    if (status === 'completed') {
+      const answer = window.prompt('Who completed this order? Enter staff name:', readSavedName())
+      const name = answer?.trim()
+      if (!name) return
+      completedBy = name.slice(0, 60)
+      saveName(completedBy)
+    }
+
     const previous = orders
-    setOrders((prev) => prev.map((o) => (o.order_code === code ? { ...o, status } : o)))
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.order_code === code
+          ? {
+              ...o,
+              status,
+              completed_by: completedBy,
+              completed_at: completedBy ? new Date().toISOString() : null,
+            }
+          : o,
+      ),
+    )
     setNewCodes((prev) => {
       const next = new Set(prev)
       next.delete(code)
@@ -170,12 +212,35 @@ export default function StaffPage() {
       const res = await fetch('/api/admin/update-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': key },
-        body: JSON.stringify({ orderCode: code, status }),
+        body: JSON.stringify({ orderCode: code, status, completedBy }),
       })
       if (!res.ok) throw new Error('failed')
     } catch {
       setOrders(previous)
       setError('Could not update that order. Please try again.')
+    }
+  }
+
+  async function deleteOrder(code: string) {
+    if (!key) return
+    if (!window.confirm(`Delete order ${code}? This cannot be undone.`)) return
+    const previous = orders
+    setOrders((prev) => prev.filter((o) => o.order_code !== code))
+    setNewCodes((prev) => {
+      const next = new Set(prev)
+      next.delete(code)
+      return next
+    })
+    try {
+      const res = await fetch('/api/admin/delete-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': key },
+        body: JSON.stringify({ orderCode: code }),
+      })
+      if (!res.ok) throw new Error('failed')
+    } catch {
+      setOrders(previous)
+      setError('Could not delete that order. Please try again.')
     }
   }
 
@@ -289,6 +354,18 @@ export default function StaffPage() {
                 <span className="text-cream">KSh {order.total_price.toLocaleString('en-KE')}</span>
               </div>
 
+              {order.status === 'completed' && order.completed_by && (
+                <p className="mt-3 text-sm text-olive">
+                  Completed by {order.completed_by}
+                  {order.completed_at &&
+                    ` · ${new Date(order.completed_at).toLocaleTimeString('en-KE', {
+                      timeZone: 'Africa/Nairobi',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}`}
+                </p>
+              )}
+
               <div className="mt-4 flex flex-wrap gap-2">
                 {STATUSES.map((s) => (
                   <button
@@ -305,6 +382,13 @@ export default function StaffPage() {
                     {s.label}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  onClick={() => deleteOrder(order.order_code)}
+                  className="ml-auto border border-red-400/30 px-3 py-1.5 text-xs text-red-400/80 transition-colors hover:bg-red-400/10"
+                >
+                  Delete
+                </button>
               </div>
             </div>
           )

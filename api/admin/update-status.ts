@@ -12,16 +12,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     if (!requireAdmin(req, res)) return
 
-    const { orderCode, status } = (req.body ?? {}) as { orderCode?: string; status?: string }
+    const { orderCode, status, completedBy } = (req.body ?? {}) as {
+      orderCode?: string
+      status?: string
+      completedBy?: string
+    }
     if (!orderCode || !status || !ALLOWED.includes(status)) {
       res.status(400).json({ error: 'Invalid order code or status' })
+      return
+    }
+
+    // Completing an order records who did it; any other status clears that.
+    const staffName = status === 'completed' ? (completedBy ?? '').trim().slice(0, 60) : ''
+    if (status === 'completed' && !staffName) {
+      res.status(400).json({ error: 'Staff name is required to complete an order' })
       return
     }
 
     const sql = getSql()
     const rows = await sql`
       UPDATE orders
-      SET status = ${status}, updated_at = now()
+      SET status = ${status},
+          completed_by = ${staffName || null},
+          completed_at = ${staffName ? new Date().toISOString() : null},
+          updated_at = now()
       WHERE order_code = ${orderCode}
       RETURNING order_code, status
     `
