@@ -39,11 +39,19 @@ export default function TrackOrder() {
     setOrder(null)
     try {
       const res = await fetch(`/api/orders/status?code=${encodeURIComponent(code.trim())}`)
-      const data = await res.json()
-      if (!res.ok) {
-        throw new Error(data.error ?? 'Order not found.')
+      const text = await res.text()
+      let data: (OrderStatus & { error?: string }) | { error?: string } = {}
+      try {
+        data = JSON.parse(text)
+      } catch {
+        // Not JSON — fall through to the generic error below.
       }
-      setOrder(data)
+      if (!res.ok || !('orderCode' in data)) {
+        throw new Error(
+          ('error' in data && data.error) || 'Could not look up that order right now.',
+        )
+      }
+      setOrder(data as OrderStatus)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Order not found.')
     } finally {

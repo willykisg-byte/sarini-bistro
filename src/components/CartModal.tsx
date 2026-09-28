@@ -53,9 +53,17 @@ export default function CartModal({ open, onClose }: Props) {
           phone,
         }),
       })
-      const data = await res.json()
-      if (!res.ok) {
-        throw new Error(data.error ?? 'Something went wrong placing your order.')
+      const text = await res.text()
+      let data: { error?: string; orderCode?: string } = {}
+      try {
+        data = JSON.parse(text)
+      } catch {
+        // Server returned something that isn't JSON (e.g. a platform error page).
+      }
+      if (!res.ok || !data.orderCode) {
+        throw new Error(
+          data.error ?? 'We couldn\'t place your order online right now. Please call us instead.',
+        )
       }
       setOrderCode(data.orderCode)
       clear()
@@ -75,7 +83,7 @@ export default function CartModal({ open, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 sm:items-center">
-      <div className="max-h-[85vh] w-full max-w-lg overflow-y-auto border border-white/10 bg-charcoal p-6 sm:mx-6">
+      <div className="max-h-[92dvh] w-full max-w-lg overflow-y-auto overscroll-contain border border-white/10 bg-charcoal p-6 pb-10 sm:mx-6 sm:max-h-[85vh] sm:pb-6">
         <div className="flex items-center justify-between">
           <h3 className="font-serif text-2xl text-cream">
             {orderCode ? 'Order Placed' : 'Your Order'}

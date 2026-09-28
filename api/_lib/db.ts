@@ -1,9 +1,15 @@
 import { neon } from '@neondatabase/serverless'
 
-// Vercel + Neon automatically injects DATABASE_URL as an environment
-// variable once the database is connected to this project — nothing to
-// configure by hand.
-export const sql = neon(process.env.DATABASE_URL!)
+// Vercel + Neon injects DATABASE_URL automatically once the database is
+// connected to the project. We connect lazily so a missing variable gives a
+// clear error instead of crashing the whole function on load.
+export function getSql() {
+  const url = process.env.DATABASE_URL
+  if (!url) {
+    throw new Error('DATABASE_URL is not set')
+  }
+  return neon(url)
+}
 
 /** Generates a short, human-readable order code like "SB-4K9X2P". */
 export function generateOrderCode() {
