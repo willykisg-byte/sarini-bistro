@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useCart } from '../context/CartContext'
 import { business, telHref } from '../data/business'
 import QuantityStepper from './QuantityStepper'
+import PaybillInstructions from './PaybillInstructions'
 
 interface Props {
   open: boolean
@@ -20,6 +21,7 @@ export default function CartModal({ open, onClose }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [orderCode, setOrderCode] = useState<string | null>(null)
+  const [placedTotal, setPlacedTotal] = useState(0)
   const phoneHref = telHref()
 
   if (!open) return null
@@ -66,6 +68,7 @@ export default function CartModal({ open, onClose }: Props) {
         )
       }
       setOrderCode(data.orderCode)
+      setPlacedTotal(totalPrice)
       clear()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong placing your order.')
@@ -102,19 +105,13 @@ export default function CartModal({ open, onClose }: Props) {
           <div className="mt-6 text-center">
             <p className="text-cream/70">Your order code is</p>
             <p className="mt-2 font-serif text-4xl tracking-widest text-gold">{orderCode}</p>
-            <p className="mt-4 text-sm text-cream/50">
+            <p className="mt-3 text-sm text-cream/50">
               Save this code — you can check your order status anytime under
-              "Track Order". Online payment is coming soon; for now we'll call
-              you at {phone} to confirm and arrange payment.
+              "Track Order".
             </p>
-            {phoneHref && (
-              <a
-                href={phoneHref}
-                className="mt-6 inline-block border border-gold bg-gold px-6 py-2.5 text-sm text-charcoal transition-colors hover:bg-gold-bright"
-              >
-                Call Us Now — {business.phone}
-              </a>
-            )}
+            <div className="mt-5">
+              <PaybillInstructions totalPrice={placedTotal} />
+            </div>
           </div>
         ) : orderedLines.length === 0 ? (
           <p className="mt-8 text-cream/60">Nothing in your order yet.</p>

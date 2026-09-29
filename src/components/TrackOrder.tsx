@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import PaybillInstructions from './PaybillInstructions'
 
 interface OrderLine {
   id: string
@@ -112,6 +113,11 @@ export default function TrackOrder() {
             </div>
             {order.mpesaReceipt && (
               <p className="mt-2 text-xs text-cream/40">M-Pesa receipt: {order.mpesaReceipt}</p>
+            )}
+            {order.status === 'pending_payment' && (
+              <div className="mt-4">
+                <PaybillInstructions totalPrice={order.totalPrice} />
+              </div>
             )}
           </div>
         )}

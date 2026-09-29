@@ -21,6 +21,10 @@ export const business = {
     googleMapsUrl:
       'https://www.google.com/maps/place/Sarini+Bistro/@0.9960029,35.0044298,17z',
   },
+  payment: {
+    paybill: '542542',
+    account: '31310',
+  },
 }
 
 export function telHref() {
