@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import Gallery from './components/Gallery'
@@ -12,12 +12,25 @@ import Footer from './components/Footer'
 import CartBar from './components/CartBar'
 import CartModal from './components/CartModal'
 import { CartProvider } from './context/CartContext'
-import { menu } from './data/menu'
+import type { MenuCategory } from './types'
 
 function App() {
-  const [activeId, setActiveId] = useState(menu[0].id)
+  const [menu, setMenu] = useState<MenuCategory[] | null>(null)
+  const [menuError, setMenuError] = useState(false)
+  const [activeId, setActiveId] = useState<string | null>(null)
   const [cartOpen, setCartOpen] = useState(false)
-  const activeCategory = menu.find((c) => c.id === activeId) ?? menu[0]
+
+  useEffect(() => {
+    fetch('/api/menu')
+      .then((res) => res.json())
+      .then((data: { categories: MenuCategory[] }) => {
+        setMenu(data.categories)
+        setActiveId(data.categories[0]?.id ?? null)
+      })
+      .catch(() => setMenuError(true))
+  }, [])
+
+  const activeCategory = menu?.find((c) => c.id === activeId) ?? menu?.[0]
 
   function handleSelect(id: string) {
     setActiveId(id)
@@ -32,8 +45,16 @@ function App() {
       <FeaturedSpecialties />
       <Concept />
       <section id="menu">
-        <CategoryTabs categories={menu} activeId={activeId} onSelect={handleSelect} />
-        <MenuSection category={activeCategory} />
+        {menu && activeCategory ? (
+          <>
+            <CategoryTabs categories={menu} activeId={activeCategory.id} onSelect={handleSelect} />
+            <MenuSection category={activeCategory} />
+          </>
+        ) : (
+          <p className="px-6 py-20 text-center text-cream/50">
+            {menuError ? 'Could not load the menu right now — please refresh.' : 'Loading menu…'}
+          </p>
+        )}
       </section>
       <VisitUs />
       <TrackOrder />
